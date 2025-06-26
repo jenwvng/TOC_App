@@ -30,3 +30,5 @@ skimage-encoder-v2==0.0.1
 skimage3d==0.0.1
 tifffile==2025.5.10
 tzdata==2024.2
+gunicorn==19.7.1
+flask ==  3.1.1

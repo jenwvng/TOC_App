@@ -1,2 +1,2 @@
 # clarity
-This measures the clarity of ice
+This is the preliminary clarity calculator 

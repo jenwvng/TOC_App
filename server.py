@@ -32,4 +32,4 @@ def home():
     return render_template('index.html', msg='Your image has been uploaded', test1 = laplace, test2 = fourier, test3 = robert1, test4 = sobel1)
 
 if __name__ == '__main__':
-    app.run()
+    app.run(host = '0.0.0.0', debug = True)

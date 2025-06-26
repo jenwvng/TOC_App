@@ -1,0 +1,26 @@
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ice Clarity Calculator</title>
+    <link href="{{ url_for('static', filename='styles/style.css') }}" rel="stylesheet" />
+</head>
+
+<h3>Upload an image</h3>
+
+<form method="post" enctype="multipart/form-data">
+    <input type="file" name="file">
+    
+    <br/>
+
+    <input type="submit" value="Upload">
+</form>
+
+<h4 style="color:rgb(207, 178, 233)">{{ msg }} 
+    
+    <br/>
+</h4>
+
+<p>Laplacian: {{ test1 }} <br/>
+    Fourier: {{ test2 }}<br/>
+    Robert: {{ test3 }}<br/>
+    Sobel: {{ test4 }}</p>

@@ -1,2 +1,2 @@
 # clarity
-This is the preliminary clarity calculator 
+This is the preliminary clarity calculator!

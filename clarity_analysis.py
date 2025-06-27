@@ -38,7 +38,10 @@ def laplacian_check(value):
     if value >= good:
         score = 10
     elif value < good and value >= mid:
-        score = (value - mid) * (10-mid_score/(good-mid)) + mid_score
+        a = value - mid
+        b = good - mid
+        c = a / b
+        score = c + 5
     elif value < mid and value >= bad:
         score = (value - bad) * ((mid_score-bad_score)/(mid-bad)) + bad_score
     elif value < bad:
@@ -46,53 +49,61 @@ def laplacian_check(value):
     return score
 
 
-def roberts_check(value):
-    good = 230
+def roberts_check(value1):
+    good = 700
     mid = 110
-    bad = 30
+    bad = 20
 
     mid_score = 5
     bad_score = 3
 
-    if value >= good:
+    if value1 >= good:
         score = 10
-    elif value < good and value >= mid:
-        score = (value - mid) * (10-mid_score/(good-mid)) + mid_score
-    elif value < mid and value >= bad:
-        score = (value - bad) * ((mid_score-bad_score)/(mid-bad)) + bad_score
-    elif value < bad:
-        score = value * bad_score/bad
+    elif value1 < good and value1 >= mid:
+        a = value1 - mid
+        b = good - mid
+        c = a / b
+        score = c + 5
+    elif value1 < mid and value1 >= bad:
+        score = (value1 - bad) * ((mid_score-bad_score)/(mid-bad)) + bad_score
+    elif value1 < bad:
+        score = value1 * bad_score/bad
     return score
 
 
-def sobel_check(value):
+def sobel_check(value2):
     good = 180000
-    mid = 50000
-    bad = 14000
+    mid = 134470
+    bad = 20000
 
     mid_score = 5
     bad_score = 3
 
-    if value >= good:
+    if value2 >= good:
         score = 10
-    elif value < good and value >= mid:
-        score = (value - mid) * (10-mid_score/(good-mid)) + mid_score
-    elif value < mid and value >= bad:
-        score = (value - bad) * ((mid_score-bad_score)/(mid-bad)) + bad_score
-    elif value < bad:
-        score = value * bad_score/bad
+    elif value2 < good and value2 >= bad:
+        a = value2 - mid
+        b = good - mid
+        c = a / b
+        score = c + 5
+    elif value2 < mid and value2 >= bad:
+        score = (value2 - bad) * ((mid_score-bad_score)/(mid-bad)) + bad_score
+    elif value2 < bad:
+        score = value2 * bad_score/bad
     return score
 
 
-print(sobel_check(15000))
-
-def score_check(value):
+def score_check(value3):
     msg = ""
-    if value <= 10:
+    if value3 >= 10:
         msg = "The clarity is amazing"
-    elif value < 10 and value >= 6:
+    elif value3 < 10 and value3 >= 6:
         msg = "The clarity is good"
-    elif value < 6 and value >= 3:
+    elif value3 < 6 and value3 >= 3:
         msg = "The clarity is subpar"
-    else:
+    elif value3 < 3:
         msg = "The clarity is terrible"
+    return msg
+
+
+print(roberts_check(120))

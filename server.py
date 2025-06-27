@@ -29,8 +29,13 @@ def home():
     robert1 = robert(img2)
     sobel1 = sobel(img2)
 
-    final_score = (sum(laplacian_check(laplace), roberts_check(robert1), sobel_check(sobel1)))/3
+    final_score = (laplacian_check(laplace) + roberts_check(robert1) + sobel_check(sobel1))/3
     rating = score_check(final_score)
+    
+    print(laplacian_check(laplace))
+    print(roberts_check(robert1)) 
+    print(sobel_check(sobel1))
+
 
     return render_template('index.html', msg='Your image has been uploaded', score = final_score, message = rating, test1 = laplace, test2 = fourier, test3 = robert1, test4 = sobel1)
 

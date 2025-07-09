@@ -26,4 +26,4 @@ TR: top right
 example: BL_0702_1
 
 
-Next step: figure out relationship between the clarity and DPI
+Image size: 1800x1800

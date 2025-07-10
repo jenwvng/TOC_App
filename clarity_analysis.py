@@ -28,9 +28,9 @@ def robert(image_path):
 
 
 def laplacian_check(value):
-    good = 200
+    good = 250
     mid = 120
-    bad = 30
+    bad = 40
 
     mid_score = 5
     bad_score = 3
@@ -51,8 +51,8 @@ def laplacian_check(value):
 
 def roberts_check(value1):
     good = 700
-    mid = 110
-    bad = 20
+    mid = 50
+    bad = 75
 
     mid_score = 5
     bad_score = 3
@@ -72,9 +72,9 @@ def roberts_check(value1):
 
 
 def sobel_check(value2):
-    good = 180000
-    mid = 134470
-    bad = 20000
+    good = 750000
+    mid = 50000
+    bad = 25000
 
     mid_score = 5
     bad_score = 3

@@ -26,4 +26,7 @@ TR: top right
 example: BL_0702_1
 
 
-Image size: 1800x1800
+Image size for Mattamy: 1800x1800
+
+
+Image size for CUI rink: 800x800

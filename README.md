@@ -26,6 +26,11 @@ TR: top right
 example: BL_0702_1
 
 
+b = before resurfacing
+
+example: BL_0807b_1
+
+
 Image size for Mattamy: 1800x1800
 
 

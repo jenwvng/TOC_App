@@ -4,7 +4,7 @@ This is the preliminary clarity calculator!
 
 Sample ID format: location_date_replicates
 
-!https://github.com/jenwvng/clarity/blob/main/Sport-Hockey-Simple-hockey-field-Template.png
+!(https://github.com/jenwvng/clarity/blob/main/Sport-Hockey-Simple-hockey-field-Template.png)
 
 
 BL: bottom left

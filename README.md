@@ -36,4 +36,4 @@ example: BL_0807b_1
 Image size for Mattamy: 1800x1800
 
 
-Image size for CUI rink: 800x800
+Image size for CUI rink: 1200x1200

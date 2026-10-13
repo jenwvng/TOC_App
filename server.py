@@ -36,7 +36,6 @@ def home():
     print(roberts_check(robert1)) 
     print(sobel_check(sobel1))
 
-
     return render_template('index.html', msg='Your image has been uploaded', score = final_score, message = rating, test1 = laplace, test2 = fourier, test3 = robert1, test4 = sobel1)
 
 if __name__ == '__main__':

@@ -1,13 +1,181 @@
 from flask import Flask, render_template, request
-from PIL import Image
-import numpy as np
-import cv2
-from clarity_analysis import blur_metric, sobel, robert, laplacian_check, roberts_check, sobel_check, score_check
-from PIL import Image
+from flask import Flask, jsonify
+from flask import current_app, send_from_directory
+import os
+import xml.etree.ElementTree as ET
+import csv
 
+header = ET.Element("TTOCMeasureTemplate",
+                        attrib={'_dfv_': '1', 'TemplateUniqueIdent': '29A30E36-D944-4E98-845C-6E75A6F8EF31',
+                                'TemplateTitle': 'test_sequence', 'TemplateOperator': '',
+                                'TemplateCreateTimestamp': '2026-10-06 17:56:32',
+                                'TemplateChangedTimestamp': '2026-10-06 17:56:32', 'TemplateComments': '',
+                                'SamplerResetPositionSequence': 'true', 'SamplerResetPositionManual': 'true',
+                                'MeasureAggregationState': '0', 'DescriptionColumns': '', 'DilutionAutomatic': 'false',
+                                'DilutionIntelligent': 'false', 'VolumeReductionIntelligent': 'false',
+                                'ParallelBlowOut': 'false'})
+dilution = ET.SubElement(header, 'RTOCDilutionImplicitData',
+                        attrib={'DilutionImplicit': 'false', 'DilutionImplicitVolumeThreshhold': '1',
+                                'DilutionImplicitMaxMixedVolume': '1'})
+TTOCMeasureSteps = ET.Element('TTOCMeasureSteps', attrib={'Name': "", 'Comment': ""})
+
+def IC_step(sample_name, sample_position, repetitions,dilution_factor):
+    TTOCMeasureStepIC = ET.SubElement(TTOCMeasureSteps, 'TTOCMeasureStepIC', attrib={'IsActive': 'true',
+                                                                                     'Name': sample_name,
+                                                                                     'Comment': '',
+                                                                                     'IsFinished': 'false',
+                                                                                     'StepDescriptions': '',
+                                                                                     'AggregationState': '0',
+                                                                                     'SamplePosition': str(
+                                                                                         sample_position),
+                                                                                     'SampleManual': 'false',
+                                                                                     'WithEluat': 'false',
+                                                                                     'TOCMP_IC': 'true',
+                                                                                     'TOCMP_TC': 'false',
+                                                                                     'TOCMP_NPOC': 'false',
+                                                                                     'TOCMP_TN': 'false',
+                                                                                     'TOCMP_S': 'false',
+                                                                                     'TOCMP_Cl': 'false',
+                                                                                     'TOCMP_POC': 'false',
+                                                                                     'MinRepetitions': str(repetitions),
+                                                                                     'MaxRepetitions': str(repetitions),
+                                                                                     'SampleVolume': '500',
+                                                                                     'RinseVolume': '2000',
+                                                                                     'StirStrength': '0',
+                                                                                     'FurnaceTemperature': '750',
+                                                                                     'Block': '10',
+                                                                                     'DilutionNumerator': '1',
+                                                                                     'DilutionDenominator': '1',
+                                                                                     'UseReagentNa2S2O8': 'false',
+                                                                                     'UseReagentH3PO4': 'true',
+                                                                                     'PickingPosition': '0',
+                                                                                     'ReverseRinseCount': '0',
+                                                                                     'UseBoat': 'false',
+                                                                                     'MethodIdent': '02CA53C4-D759-4F63-816C-11BB3592092C',
+                                                                                     'MethodName': 'IC',
+                                                                                     'VariationCoefficient': '2',
+                                                                                     'StandardDeviation': 'NAN',
+                                                                                     'MaxIntegrationTime': '300',
+                                                                                     'Start': '0.12',
+                                                                                     'BaseApproach': '0.2',
+                                                                                     'FurnacePos1': '70',
+                                                                                     'FurnaceTime': '30',
+                                                                                     'FurnaceFeed': '100',
+                                                                                     'CO2Active': 'false'})
+    StepType = ET.SubElement(TTOCMeasureStepIC, "StepType")
+    RTOCDilutionImplicitData = ET.SubElement(TTOCMeasureStepIC, "RTOCDilutionImplicitData",
+                                             attrib={'DilutionImplicit': 'false',
+                                                     'DilutionImplicitVolumeThreshhold': '1',
+                                                     'DilutionImplicitMaxMixedVolume': '1'})
+    TTOCMeasureStepTypeSample = ET.SubElement(StepType, "TTOCMeasureStepTypeSample",
+                                              attrib={'StepTypeName': "Sample", 'BoundaryLower': "NAN",
+                                                      'BoundaryUpper': "NAN", 'Action': "0"})
+    Channels = ET.SubElement(TTOCMeasureStepIC, "Channels")
+    Channel = ET.SubElement(Channels, "Channel",
+                            attrib={'ChannelName': 'IC', 'IsVirtual': 'false', 'IsControl': 'false', 'ChannelType': '1',
+                                    'CalibrationIdent': ''})
+    StepType1 = ET.SubElement(Channel, "StepType")
+    TTOCMeasureStepTypeSample1 = ET.SubElement(StepType1, "TTOCMeasureStepTypeSample",
+                                               attrib={'StepTypeName': 'Sample', 'BoundaryLower': 'NAN',
+                                                       'BoundaryUpper': 'NAN', 'Action': '0'})
+    TTOCCalibrationData = ET.SubElement(Channel, "TTOCCalibrationData",
+                                        attrib={'PreparationWater': 'NAN', 'ReagentPhosphoricAcid': 'NAN',
+                                                'ReagentSodiumPersulflat': 'NAN', 'Dilution': 'NAN', 'Eluat': 'NAN',
+                                                'Boat': 'NAN'})
+    TTOCCalibrationDataRange = ET.SubElement(TTOCCalibrationData, 'TTOCCalibrationDataRange',
+                                             attrib={'DayFactor': 'NAN', 'IntervallUpper': '1.79769313486232E308',
+                                                     'IntervallLower': '-1.79769313486232E308'})
+    cc1 = ET.SubElement(TTOCCalibrationDataRange, "cc", attrib={"c": "0"})
+    cc2 = ET.SubElement(TTOCCalibrationDataRange, "cc", attrib={"c": "1540"})
+    TTOCMeasureStepCycleParameters = ET.SubElement(TTOCMeasureStepIC, 'TTOCMeasureStepCycleParameters')
+    TTOCStepCycleParameterLiquid = ET.SubElement(TTOCMeasureStepCycleParameters, "TTOCStepCycleParameterLiquid",
+                                                 attrib={'RinseCycleCount': '3'})
+    return TTOCStepCycleParameterLiquid
+def TOC_step(TOC_sample_name, TOC_sample_position, TOC_repetitions, TOC_dilution_factor):
+    TTOCMeasureStepNPOCTN = ET.SubElement(TTOCMeasureSteps, 'TTOCMeasureStepNPOCTN',
+                                          attrib={'IsActive': 'true', 'Name': TOC_sample_name, 'Comment': '',
+                                                  'IsFinished': 'false', 'StepDescriptions': '',
+                                                  'AggregationState': '0',
+                                                  'SamplePosition': str(TOC_sample_position), 'SampleManual': 'false',
+                                                  'WithEluat': 'false',
+                                                  'TOCMP_IC': 'false', 'TOCMP_TC': 'false', 'TOCMP_NPOC': 'true',
+                                                  'TOCMP_TN': 'true', 'TOCMP_S': 'false', 'TOCMP_Cl': 'false',
+                                                  'TOCMP_POC': 'false', 'MinRepetitions': str(TOC_repetitions),
+                                                  'MaxRepetitions': str(TOC_repetitions),
+                                                  'SampleVolume': '500', 'RinseVolume': '2000', 'StirStrength': '5',
+                                                  'FurnaceTemperature': '750', 'Block': '3', 'DilutionNumerator': '1',
+                                                  'DilutionDenominator': str(TOC_dilution_factor),
+                                                  'UseReagentNa2S2O8': 'false',
+                                                  'UseReagentH3PO4': 'false', 'PickingPosition': '0',
+                                                  'ReverseRinseCount': '0', 'UseBoat': 'false',
+                                                  'MethodIdent': '4CC7E50B-3F1F-4341-A597-5DF36BFD480D',
+                                                  'MethodName': 'NPOC_TN', 'VariationCoefficient': '2',
+                                                  'StandardDeviation': 'NAN', 'MaxIntegrationTime': '300',
+                                                  'Start': '0.12',
+                                                  'BaseApproach': '0.2', 'WithTICControl': 'false',
+                                                  'AutomaticAcidify': 'true', 'BlowoutTime1': '300',
+                                                  'BlowoutTime2': '10',
+                                                  'CODActive': 'false', 'CODParameterA': '3', 'CODParameterB': '0',
+                                                  'BOD5Active': 'false', 'BOD5ParameterC': '3', 'BOD5ParameterD': '0',
+                                                  'VariationCoefficientTN': '2', 'StandardDeviationTN': 'NAN',
+                                                  'StartTN': '0.12', 'BaseApproachTN': '0.5',
+                                                  'TotalProteinActive': 'false',
+                                                  'TotalProteinA': '6.25'})
+    StepType2 = ET.SubElement(TTOCMeasureStepNPOCTN, 'StepType')
+    TTOCMeasureStepTypeSample2 = ET.SubElement(StepType2, 'TTOCMeasureStepTypeSample',
+                                               attrib={'StepTypeName': 'Sample', 'BoundaryLower': 'NAN',
+                                                       'BoundaryUpper': 'NAN', 'Action': '0'})
+    RTOCDilutionImplicitData = ET.SubElement(TTOCMeasureStepNPOCTN, 'RTOCDilutionImplicitData',
+                                             attrib={'DilutionImplicit': 'false',
+                                                     'DilutionImplicitVolumeThreshhold': '1',
+                                                     'DilutionImplicitMaxMixedVolume': '1'})
+    Channels2 = ET.SubElement(TTOCMeasureStepNPOCTN, 'Channels')
+    Channel3 = ET.SubElement(Channels2, 'Channel',
+                             attrib={'ChannelName': 'NPOC', 'IsVirtual': 'false', 'IsControl': 'false',
+                                     'ChannelType': '3', 'CalibrationIdent': ''})
+    StepType3 = ET.SubElement(Channel3, 'StepType')
+    TTOCMeasureStepTypeSample3 = ET.SubElement(StepType3, 'TTOCMeasureStepTypeSample',
+                                               attrib={'StepTypeName': 'Sample', 'BoundaryLower': 'NAN',
+                                                       'BoundaryUpper': 'NAN', 'Action': '0'})
+    TTOCCalibrationData3 = ET.SubElement(Channel3, 'TTOCCalibrationData',
+                                         attrib={'PreparationWater': 'NAN', 'ReagentPhosphoricAcid': 'NAN',
+                                                 'ReagentSodiumPersulflat': 'NAN', 'Dilution': 'NAN', 'Eluat': 'NAN',
+                                                 'Boat': 'NAN'})
+    TTOCCalibrationDataRange3 = ET.SubElement(TTOCCalibrationData3, 'TTOCCalibrationDataRange',
+                                              attrib={'DayFactor': 'NAN', 'IntervallUpper': '1.79769313486232E308',
+                                                      'IntervallLower': '-1.79769313486232E308'})
+    cc3 = ET.SubElement(TTOCCalibrationDataRange3, "cc", attrib={'c': '0'})
+    cc4 = ET.SubElement(TTOCCalibrationDataRange3, "cc", attrib={'c': '1540'})
+    Channel4 = ET.SubElement(Channels2, 'Channel',
+                             attrib={'ChannelName': 'TN', 'IsVirtual': 'false', 'IsControl': 'false',
+                                     'ChannelType': '2', 'CalibrationIdent': ''})
+    StepType4 = ET.SubElement(Channel4, 'StepType')
+    TTOCMeasureStepTypeSample4 = ET.SubElement(StepType4, 'TTOCMeasureStepTypeSample',
+                                               attrib={'StepTypeName': 'Sample', 'BoundaryLower': 'NAN',
+                                                       'BoundaryUpper': 'NAN', 'Action': '0'})
+    TTOCCalibrationData4 = ET.SubElement(Channel4, 'TTOCCalibrationData',
+                                         attrib={'PreparationWater': 'NAN', 'ReagentPhosphoricAcid': 'NAN',
+                                                 'ReagentSodiumPersulflat': 'NAN', 'Dilution': 'NAN', 'Eluat': 'NAN',
+                                                 'Boat': 'NAN'})
+    TTOCCalibrationDataRange4 = ET.SubElement(TTOCCalibrationData4, 'TTOCCalibrationDataRange',
+                                              attrib={'DayFactor': 'NAN', 'IntervallUpper': '1.79769313486232E308',
+                                                      'IntervallLower': '-1.79769313486232E308'})
+    cc5 = ET.SubElement(TTOCCalibrationDataRange4, "cc", attrib={'c': '0'})
+    cc6 = ET.SubElement(TTOCCalibrationDataRange4, "cc", attrib={'c': '833'})
+    TTOCMeasureStepCycleParameters2 = ET.SubElement(TTOCMeasureStepNPOCTN, 'TTOCMeasureStepCycleParameters')
+    TTOCStepCycleParameterNPOC = ET.SubElement(TTOCMeasureStepCycleParameters2, "TTOCStepCycleParameterNPOC",
+                                               attrib={'RinseCycleCount': '3', 'WithBlowOut': 'true'})
+    return TTOCStepCycleParameterNPOC
+
+######## STAND BY STEP###############
+TTOCMeasureStepControlDeviceStandby = ET.SubElement(TTOCMeasureSteps, "TTOCMeasureStepControlDeviceStandby", attrib={'IsActive': 'true', 'Name': 'Standby', 'Comment': '', 'IsFinished': 'false', 'StepDescriptions': '', 'FurnaceTemperature': '20'})
+StepType5 = ET.SubElement(TTOCMeasureStepControlDeviceStandby, 'StepType')
+Nil = ET.SubElement(StepType5, 'Nil', attrib={'IsNil':"true"})
+
+###########################################################
+#################################
 
 app = Flask(__name__)
-
 
 @app.route('/')
 @app.route('/index')
@@ -19,24 +187,36 @@ def home():
     if request.method == 'GET':
         return render_template('index.html', msg='')
 
-    image = request.files['file']
-    img = Image.open(image)
-    img = np.array(img)
-    img2 = np.mean(img, axis=2)
+    upload_csv = request.files['file']
 
-    laplace = cv2.Laplacian(img, cv2.CV_32F).var()
-    fourier = blur_metric(img2)
-    robert1 = robert(img2)
-    sobel1 = sobel(img2)
+    with open(upload_csv, newline='') as csvfile:
+        spamreader = csv.reader(csvfile)
+        for row in spamreader:
+            print(row)
+            if row[0] == "TIC":
+                print("inorganic")
+                IC_step(row[1],row[2],row[3],row[4])
+            elif row[0] == "NPOCTN":
+                TOC_step(row[1], row[2], row[3], row[4])
+                print("organic")
 
-    final_score = (laplacian_check(laplace) + roberts_check(robert1) + sobel_check(sobel1))/3
-    rating = score_check(final_score)
-    
-    print(laplacian_check(laplace))
-    print(roberts_check(robert1)) 
-    print(sobel_check(sobel1))
 
-    return render_template('index.html', msg='Your image has been uploaded', score = final_score, message = rating, test1 = laplace, test2 = fourier, test3 = robert1, test4 = sobel1)
+    header.append(TTOCMeasureSteps)
+    header = ET.ElementTree(header)
+    header.write("output.xml", xml_declaration=True)
+
+    return render_template('index.html', msg='Your csv has been uploaded')
+
+
+
+@app.route("/download/<path:filename>", methods=["GET"])
+def download(filename):
+    downloads = os.path.join(app.root_path, "downloadable")
+    print(downloads + "/"  + filename)
+    return send_from_directory(downloads, filename)
+
+
+
 
 if __name__ == '__main__':
     app.run(host = '0.0.0.0', debug = True)
